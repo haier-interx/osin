@@ -209,16 +209,29 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	}
 
 	// check redirect uri
-	if ret.RedirectUri == "" {
-		ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
+	//if ret.RedirectUri == "" {
+	//	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
+	//}
+	//if realRedirectUri, err := ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
+	//	s.setErrorAndLog(w, E_INVALID_REQUEST, err, "auth_code_request=%s", "error validating client redirect")
+	//	return nil
+	//} else {
+	//	ret.RedirectUri = realRedirectUri
+	//}
+	//if ret.AuthorizeData.RedirectUri != ret.RedirectUri {
+	//	s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Redirect uri is different"), "auth_code_request=%s", "client redirect does not match authorization data")
+	//	return nil
+	//}
+	// 修正配置多个重定向地址 在code换token时 重定向地址不匹配问题
+	slist := strings.Split(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
+	match := false
+	for _, item := range slist {
+		if item == ret.AuthorizeData.RedirectUri {
+			match = true
+			break
+		}
 	}
-	if realRedirectUri, err := ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
-		s.setErrorAndLog(w, E_INVALID_REQUEST, err, "auth_code_request=%s", "error validating client redirect")
-		return nil
-	} else {
-		ret.RedirectUri = realRedirectUri
-	}
-	if ret.AuthorizeData.RedirectUri != ret.RedirectUri {
+	if !match {
 		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Redirect uri is different"), "auth_code_request=%s", "client redirect does not match authorization data")
 		return nil
 	}

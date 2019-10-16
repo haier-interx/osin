@@ -2,7 +2,6 @@ package osin
 
 import (
 	"net/http"
-	"net/url"
 	"regexp"
 	"time"
 )
@@ -107,22 +106,23 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 	r.ParseForm()
 
 	// create the authorization request
-	unescapedUri, err := url.QueryUnescape(r.FormValue("redirect_uri"))
-	if err != nil {
-		w.SetErrorState(E_INVALID_REQUEST, "", "")
-		w.InternalError = err
-		return nil
-	}
-
+	//unescapedUri, err := url.QueryUnescape(r.FormValue("redirect_uri"))
+	//if err != nil {
+	//	w.SetErrorState(E_INVALID_REQUEST, "", "")
+	//	w.InternalError = err
+	//	return nil
+	//}
+	// 替换redirect_uri取值
 	ret := &AuthorizeRequest{
 		State:       r.FormValue("state"),
 		Scope:       r.FormValue("scope"),
-		RedirectUri: unescapedUri,
+		RedirectUri: r.FormValue("redirect_uri"),
 		Authorized:  false,
 		HttpRequest: r,
 	}
 
 	// must have a valid client
+	var err error
 	ret.Client, err = w.Storage.GetClient(r.FormValue("client_id"))
 	if err == ErrNotFound {
 		w.SetErrorState(E_UNAUTHORIZED_CLIENT, "", ret.State)
@@ -153,7 +153,7 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 		w.InternalError = err
 		return nil
 	} else {
-		ret.RedirectUri =  realRedirectUri
+		ret.RedirectUri = realRedirectUri
 	}
 
 	w.SetRedirect(ret.RedirectUri)

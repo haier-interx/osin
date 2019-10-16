@@ -1,2 +1,16 @@
 *.exe
 /src
+
+#linux
+
+/cmd/cmd
+/cmd/debug
+
+# [windows]
+*.bat
+/cmd/linux.bat
+/cmd/cmd.exe
+
+.idea
+
+.vscode
