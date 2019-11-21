@@ -193,10 +193,11 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "auth_code_request=%s", "authorization client is nil")
 		return nil
 	}
-	if ret.AuthorizeData.Client.GetRedirectUri() == "" {
-		s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "auth_code_request=%s", "client redirect uri is empty")
-		return nil
-	}
+	// 移动端换取code 没有重定向地址 用code换取token在这里会出错
+	//if ret.AuthorizeData.Client.GetRedirectUri() == "" {
+	//	s.setErrorAndLog(w, E_UNAUTHORIZED_CLIENT, nil, "auth_code_request=%s", "client redirect uri is empty")
+	//	return nil
+	//}
 	if ret.AuthorizeData.IsExpiredAt(s.Now()) {
 		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "auth_code_request=%s", "authorization data is expired")
 		return nil
