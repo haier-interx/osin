@@ -224,17 +224,19 @@ func (s *Server) handleAuthorizationCodeRequest(w *Response, r *http.Request) *A
 	//	return nil
 	//}
 	// 修正配置多个重定向地址 在code换token时 重定向地址不匹配问题
-	slist := strings.Split(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
-	match := false
-	for _, item := range slist {
-		if item == ret.AuthorizeData.RedirectUri {
-			match = true
-			break
+	if ret.AuthorizeData.RedirectUri != "" {
+		slist := strings.Split(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
+		match := false
+		for _, item := range slist {
+			if item == ret.AuthorizeData.RedirectUri {
+				match = true
+				break
+			}
 		}
-	}
-	if !match {
-		s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Redirect uri is different"), "auth_code_request=%s", "client redirect does not match authorization data")
-		return nil
+		if !match {
+			s.setErrorAndLog(w, E_INVALID_REQUEST, errors.New("Redirect uri is different"), "auth_code_request=%s", "client redirect does not match authorization data")
+			return nil
+		}
 	}
 
 	// Verify PKCE, if present in the authorization data
