@@ -3,6 +3,7 @@ package osin
 import (
 	"net/http"
 	"regexp"
+	"strings"
 	"time"
 )
 
@@ -100,6 +101,13 @@ type AuthorizeTokenGen interface {
 	GenerateAuthorizeToken(data *AuthorizeData) (string, error)
 }
 
+func checkRestful(restful string) bool {
+	if strings.EqualFold(restful, "true") {
+		return true
+	}
+	return false
+}
+
 // HandleAuthorizeRequest is the main http.HandlerFunc for handling
 // authorization requests
 func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *AuthorizeRequest {
@@ -142,21 +150,25 @@ func (s *Server) HandleAuthorizeRequest(w *Response, r *http.Request) *Authorize
 		return nil
 	}
 
-	// check redirect uri, if there are multiple client redirect uri's
-	// don't set the uri
-	if ret.RedirectUri == "" && FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator) == ret.Client.GetRedirectUri() {
-		ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
-	}
+	// restful 是给移动端获取code用的，所以不需要校验回调地址及302
+	restful := r.FormValue("restful")
+	if !checkRestful(restful) {
+		// check redirect uri, if there are multiple client redirect uri's
+		// don't set the uri
+		if ret.RedirectUri == "" && FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator) == ret.Client.GetRedirectUri() {
+			ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
+		}
 
-	if realRedirectUri, err := ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
-		w.SetErrorState(E_INVALID_REQUEST, "", ret.State)
-		w.InternalError = err
-		return nil
-	} else {
-		ret.RedirectUri = realRedirectUri
-	}
+		if realRedirectUri, err := ValidateUriList(ret.Client.GetRedirectUri(), ret.RedirectUri, s.Config.RedirectUriSeparator); err != nil {
+			w.SetErrorState(E_INVALID_REQUEST, "", ret.State)
+			w.InternalError = err
+			return nil
+		} else {
+			ret.RedirectUri = realRedirectUri
+		}
 
-	w.SetRedirect(ret.RedirectUri)
+		w.SetRedirect(ret.RedirectUri)
+	}
 
 	requestType := AuthorizeRequestType(r.FormValue("response_type"))
 	if s.Config.AllowedAuthorizeTypes.Exists(requestType) {
