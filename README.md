@@ -1,6 +1,11 @@
 OSIN
 ====
 
+<font color="red" size=5>合并github.com/openshift/osin代码到github.com/haier-interx/osin时,一定要主要package名称的修改</font>
+
+如何合并参考:https://blog.csdn.net/jiankunking/article/details/130924893?spm=1001.2014.3001.5501
+
+
 [![GoDoc](https://godoc.org/github.com/openshift/osin?status.svg)](https://godoc.org/github.com/openshift/osin)
 
 
@@ -21,8 +26,8 @@ The library implements the majority of the specification, like authorization and
 
 ````go
 import (
-	"github.com/openshift/osin"
-	ex "github.com/openshift/osin/example"
+	"github.com/haier-interx/osin"
+	ex "github.com/haier-interx/osin/example"
 )
 
 // ex.NewTestStorage implements the "osin.Storage" interface
