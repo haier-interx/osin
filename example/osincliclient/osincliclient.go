@@ -1,14 +1,14 @@
 package main
 
-// Use github.com/openshift/osincli client to test
+// Use github.com/haier-interx/osincli client to test
 // Open url in browser:
 // http://localhost:14001
 
 import (
 	"fmt"
-	"github.com/openshift/osin"
-	"github.com/openshift/osin/example"
-	"github.com/openshift/osincli"
+	"github.com/haier-interx/osin"
+	"github.com/haier-interx/osin/example"
+	"github.com/haier-interx/osincli"
 	"net/http"
 )
 

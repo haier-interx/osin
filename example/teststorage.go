@@ -2,7 +2,7 @@ package example
 
 import (
 	"fmt"
-	"github.com/openshift/osin"
+	"github.com/haier-interx/osin"
 )
 
 type TestStorage struct {
