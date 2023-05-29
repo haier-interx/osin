@@ -574,7 +574,13 @@ func (s Server) setErrorAndLog(w *Response, responseError string, internalError 
 	format := "error=%v, internal_error=%#v " + debugFormat
 
 	w.InternalError = internalError
-	w.SetError(responseError, "")
+	//w.SetError(responseError, "")
+	// 20230529 优化提示,方便联调
+	if internalError == nil || len(internalError.Error()) == 0 {
+		w.SetError(responseError, "")
+	} else {
+		w.SetError(responseError, internalError.Error())
+	}
 
 	s.Logger.Printf(format, append([]interface{}{responseError, internalError}, debugArgs...)...)
 }
