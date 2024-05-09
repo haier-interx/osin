@@ -1,10 +1,10 @@
 OSIN
 ====
 
-<font color="red" size=5>合并github.com/openshift/osin代码到github.com/haier-interx/osin时,一定要主要package名称的修改</font>
+<font color="red" size=5>
+合并github.com/openshift/osin代码到github.com/haier-interx/osin时,一定要注意package名称的修改</font>
 
 如何合并参考:https://blog.csdn.net/jiankunking/article/details/130924893?spm=1001.2014.3001.5501
-
 
 [![GoDoc](https://godoc.org/github.com/openshift/osin?status.svg)](https://godoc.org/github.com/openshift/osin)
 
@@ -20,7 +20,8 @@ which increases security for code-exchange flows for public OAuth clients.
 
 Using it, you can build your own OAuth2 authentication service.
 
-The library implements the majority of the specification, like authorization and token endpoints, and authorization code, implicit, resource owner and client credentials grant types.
+The library implements the majority of the specification, like authorization and token endpoints, and authorization
+code, implicit, resource owner and client credentials grant types.
 
 ### Example Server
 
@@ -73,7 +74,8 @@ http://localhost:14000/authorize?response_type=code&client_id=1234&redirect_uri=
 
 ### Storage backends
 
-There is a mock available at [example/teststorage.go](/example/teststorage.go) which you can use as a guide for writing your own.  
+There is a mock available at [example/teststorage.go](/example/teststorage.go) which you can use as a guide for writing
+your own.
 
 You might want to check out other implementations for common database management systems as well:
 
@@ -95,27 +97,30 @@ Rangel Reale
 rangelreale@gmail.com
 
 ### Changes
+
 2019-05-13
 ==========
+
 * NON-BREAKING CHANGES
-  - Updated imports in examples to use github.com/openshift/osin instead of github.com/RangelReale/osin
+    - Updated imports in examples to use github.com/openshift/osin instead of github.com/RangelReale/osin
 
 2014-06-25
 ==========
+
 * BREAKING CHANGES:
-	- Storage interface has 2 new methods, Clone and Close, to better support storages
-	  that need to clone / close in each connection (mgo)
-	- Client was changed to be an interface instead of an struct. Because of that,
-	  the Storage interface also had to change, as interface is already a pointer.
+    - Storage interface has 2 new methods, Clone and Close, to better support storages
+      that need to clone / close in each connection (mgo)
+    - Client was changed to be an interface instead of an struct. Because of that,
+      the Storage interface also had to change, as interface is already a pointer.
 
-	- HOW TO FIX YOUR CODE:
-		+ In your Storage, add a Clone function returning itself, and a do nothing Close.
-		+ In your Storage, replace all *osin.Client with osin.Client (remove the pointer reference)
-		+ If you used the osin.Client struct directly in your code, change it to osin.DefaultClient,
-		  which is a struct with the same fields that implements the interface.
-		+ Change all accesses using osin.Client to use the methods instead of the fields directly.
-		+ You MUST defer Response.Close in all your http handlers, otherwise some
-		  Storages may not clean correctly.
+    - HOW TO FIX YOUR CODE:
+        + In your Storage, add a Clone function returning itself, and a do nothing Close.
+        + In your Storage, replace all *osin.Client with osin.Client (remove the pointer reference)
+        + If you used the osin.Client struct directly in your code, change it to osin.DefaultClient,
+          which is a struct with the same fields that implements the interface.
+        + Change all accesses using osin.Client to use the methods instead of the fields directly.
+        + You MUST defer Response.Close in all your http handlers, otherwise some
+          Storages may not clean correctly.
 
-				resp := server.NewResponse()
-				defer resp.Close()
+          	resp := server.NewResponse()
+          	defer resp.Close()
