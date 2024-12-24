@@ -13,12 +13,13 @@ import (
 type AccessRequestType string
 
 const (
-	AUTHORIZATION_CODE AccessRequestType = "authorization_code"
-	REFRESH_TOKEN      AccessRequestType = "refresh_token"
-	PASSWORD           AccessRequestType = "password"
-	CLIENT_CREDENTIALS AccessRequestType = "client_credentials"
-	ASSERTION          AccessRequestType = "assertion"
-	IMPLICIT           AccessRequestType = "__implicit"
+	AUTHORIZATION_CODE    AccessRequestType = "authorization_code"
+	REFRESH_TOKEN         AccessRequestType = "refresh_token"
+	PASSWORD              AccessRequestType = "password"
+	CLIENT_CREDENTIALS    AccessRequestType = "client_credentials"
+	ASSERTION             AccessRequestType = "assertion"
+	IMPLICIT              AccessRequestType = "__implicit"
+	SMS_VERIFICATION_CODE AccessRequestType = "sms_verification_code" // 20241224添加短信验证码授权模式
 )
 
 // AccessRequest is a request for access tokens
@@ -142,6 +143,8 @@ func (s *Server) HandleAccessRequest(w *Response, r *http.Request) *AccessReques
 			return s.handleClientCredentialsRequest(w, r)
 		case ASSERTION:
 			return s.handleAssertionRequest(w, r)
+		case SMS_VERIFICATION_CODE:
+			return s.handleSmsVerificationCodeRequest(w, r)
 		}
 	}
 
@@ -391,6 +394,42 @@ func (s *Server) handlePasswordRequest(w *Response, r *http.Request) *AccessRequ
 	// "username" and "password" is required
 	if ret.Username == "" || ret.Password == "" {
 		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "handle_password=%s", "username and pass required")
+		return nil
+	}
+
+	// must have a valid client
+	if ret.Client = s.getClient(auth, w.Storage, w); ret.Client == nil {
+		return nil
+	}
+
+	// set redirect uri
+	ret.RedirectUri = FirstUri(ret.Client.GetRedirectUri(), s.Config.RedirectUriSeparator)
+
+	return ret
+}
+
+func (s *Server) handleSmsVerificationCodeRequest(w *Response, r *http.Request) *AccessRequest {
+	// get client authentication
+	auth := s.getClientAuth(w, r, s.Config.AllowClientSecretInParams)
+	if auth == nil {
+		return nil
+	}
+
+	// generate access token
+	ret := &AccessRequest{
+		Type:            SMS_VERIFICATION_CODE,
+		Username:        r.FormValue("username"),
+		Password:        r.FormValue("password"),
+		Scope:           r.FormValue("scope"),
+		GenerateRefresh: true,
+		Expiration:      s.Config.AccessExpiration,
+		HttpRequest:     r,
+	}
+
+	// "username" and "password" is required
+	if ret.Username == "" || ret.Password == "" {
+		// 这里的用户名其实是手机号 密码其实是短信验证码
+		s.setErrorAndLog(w, E_INVALID_GRANT, nil, "handle_sms_verification_code=%s", "username and pass required")
 		return nil
 	}
 
